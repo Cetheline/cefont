@@ -68,11 +68,15 @@ def capture_alacritty(path, family, size):
     active_size = size if size is not None else font.get('size', 12)
     if isinstance(active_size, bool) or not isinstance(active_size, (int, float)) or not math.isfinite(active_size) or active_size <= 0:
         raise RecoveryError('Font size must be a positive finite number')
-    normal = font.setdefault('normal', {})
-    if not isinstance(normal, dict):
-        raise RecoveryError('Alacritty font.normal is not a table')
-    normal['family'] = family
-    normal.setdefault('style', 'Regular')
+    # Explicit variant families override Alacritty's fallback to normal.family.
+    # Cover every variant, including overrides supplied by imported configs.
+    for variant, default_style in (('normal', 'Regular'), ('bold', 'Bold'),
+                                   ('italic', 'Italic'), ('bold_italic', 'Bold Italic')):
+        face = font.setdefault(variant, {})
+        if not isinstance(face, dict):
+            raise RecoveryError('Alacritty font.%s is not a table' % variant)
+        face['family'] = family
+        face.setdefault('style', default_style)
     font['size'] = active_size
     # A canonical TOML representation of parsed data avoids duplicate tables,
     # including dotted/inline/nested tables and arrays of tables. Comments are

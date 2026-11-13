@@ -289,12 +289,37 @@ class TerminalTests(unittest.TestCase):
                 with tt.TerminalFontContext('New "Font" \\ Family', 13):
                     parsed = tomllib.loads(config.read_text())
                     self.assertEqual(parsed['font']['normal']['family'], 'New "Font" \\ Family')
+                    for variant in ('bold', 'italic', 'bold_italic'):
+                        self.assertEqual(parsed['font'][variant]['family'], 'New "Font" \\ Family')
                 self.assertEqual(config.read_bytes(), original)
                 self.assertEqual(config.stat().st_mode & 0o777, 0o640)
 
+    @unittest.skipUnless(terminal_config.tomllib is not None, 'Alacritty mutation requires a TOML parser')
+    def test_alacritty_all_style_families_switch_and_restore(self):
+        import tomllib
+        config = self.base / 'alacritty.toml'
+        original = (b'# preserve this comment\n[font]\nsize=11\n'
+                    b'normal={family="Old Normal",style="Light"}\n'
+                    b'bold={family="Old Bold",style="SemiBold"}\n'
+                    b'italic={family="Old Italic",style="Oblique"}\n'
+                    b'bold_italic={family="Old Bold Italic",style="Bold Oblique"}\n')
+        config.write_bytes(original)
+        config.chmod(0o640)
+        with patch.object(tt, 'detect_terminal_emulator', return_value=('alacritty', {})), \
+             patch.object(tt, '_find_alacritty_config', return_value=str(config)):
+            with tt.TerminalFontContext('DejaVu Serif', 18) as ctx:
+                self.assertTrue(ctx.is_active, ctx.fallback_error)
+                font = tomllib.loads(config.read_text())['font']
+                for variant in ('normal', 'bold', 'italic', 'bold_italic'):
+                    self.assertEqual(font[variant]['family'], 'DejaVu Serif')
+                    self.assertEqual(font[variant]['style'], tomllib.loads(original.decode())['font'][variant]['style'])
+            self.assertEqual(config.read_bytes(), original)
+            self.assertEqual(config.stat().st_mode & 0o777, 0o640)
+
     def test_alacritty_invalid_or_unsupported_input_is_unchanged(self):
         from cefont.core import terminal_config
-        for suffix, original in (('.toml', b'[font]\n[font]\n'), ('.yml', b'font: {size: 11}')):
+        for suffix, original in (('.toml', b'[font]\n[font]\n'), ('.yml', b'font: {size: 11}'),
+                                 ('.toml', b'[font]\nbold="invalid table"\n')):
             config = self.base / ('alacritty' + suffix)
             config.write_bytes(original)
             with self.subTest(suffix=suffix), \

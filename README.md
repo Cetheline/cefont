@@ -303,16 +303,16 @@ The table describes **live font switching for `test` and `playground`**, not ima
 
 | Terminal | Tested version | Live font switching |
 | :--- | :---: | :---: |
-| GNOME Console (KGX) | Not recorded | V |
-| GNOME Terminal | Not recorded | V |
-| Alacritty | Not recorded | V |
+| GNOME Console (KGX) | KGX 51.0 / VTE 0.84.1 (`+BIDI +GNUTLS +ICU +SYSTEMD`) | V |
+| GNOME Terminal (not Console/KGX) | GNOME Terminal 3.60.0 / VTE 0.84.1 (`+BIDI +GNUTLS +ICU +SYSTEMD`) | V |
+| Alacritty | 0.17.0 (`94e7c887`) | V |
 | Kitty | Not recorded | X |
 | xterm | Not recorded | X |
 | WezTerm | Not recorded | X |
 | Foot | Not recorded | X |
 | Konsole | Not recorded | X |
 
-Version-specific terminal tests have not been recorded. Automated adapter tests use mocked settings commands and temporary configuration files; the screenshots do not identify terminal versions.
+Live font switching (hot update) was reported working in manual testing on the KGX, GNOME Terminal, and Alacritty versions listed above. These results apply to the tested setups; compatibility with other configurations remains experimental. Automated adapter tests use mocked settings commands and temporary configuration files; the screenshots do not identify terminal versions.
 
 For rendered previews, CeFont includes Kitty graphics, iTerm2 inline images, Sixel, and Unicode half-block encoders. Actual display depends on your terminal and any SSH or multiplexer passthrough. ASCII glyph rendering and text previews provide additional options.
 
@@ -334,7 +334,7 @@ cefont test "Noto Sans Mono" --size 12
 cefont playground "Noto Sans Mono" --size 12
 ```
 
-KGX/GNOME Terminal adapters use GSettings capture and checked restoration. Alacritty uses validated TOML configuration changes and saved original bytes; it requires Python's `tomllib`. Keeping an Alacritty change canonicalizes TOML formatting, while reverting restores the original bytes.
+KGX/GNOME Terminal adapters use GSettings capture and checked restoration. Alacritty uses validated TOML configuration changes and saved original bytes; it requires Python's `tomllib`. Its adapter switches normal, bold, italic, and bold-italic families together, preserving configured styles. Keeping an Alacritty change canonicalizes TOML formatting, while reverting restores the original bytes.
 
 Kitty and xterm live font mutation are disabled because their previous switching paths could not establish reliable restoration. Detecting another emulator does not imply that it has a live-switch adapter. Image previews remain independent of these restrictions.
 
@@ -395,6 +395,8 @@ Start reading at [`cefont/main.py`](cefont/main.py) for command dispatch, [`cefo
 </details>
 
 ## Credits and license
+
+> **AI-assisted development:** CeFont is made with AI assistance under the direction of its human author, **Cetheline**. Cetheline guides the project's design, development, and release decisions. AI involvement does not guarantee correctness; experimental features still need testing and debugging.
 
 **Original project: [FontManager/font-manager](https://github.com/FontManager/font-manager).**
 
