@@ -1,0 +1,3 @@
+"""Font Manager CLI package."""
+
+__version__ = "0.9.4"

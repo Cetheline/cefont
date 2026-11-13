@@ -1,0 +1,1 @@
+"""Bundled orthography definitions."""

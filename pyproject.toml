@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cefont"
+version = "1.0.0"
+description = "CeFont - Professional Terminal Font Manager & Rendering Engine for Linux"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+    { name = "Yosatsu" }
+]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing :: Fonts",
+]
+
+[project.scripts]
+cefont = "cefont.main:main"
+font-manager-cli = "cefont.main:main"
+
+[tool.setuptools]
+packages = ["cefont", "cefont.core", "cefont.resources", "cefont.resources.orthographies"]
+package-dir = { "cefont.resources" = "data" }
+
+[tool.setuptools.package-data]
+"cefont.resources" = ["*.h"]
+"cefont.resources.orthographies" = ["*"]
